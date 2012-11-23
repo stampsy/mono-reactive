@@ -36,7 +36,7 @@ namespace System.Reactive.Linq
 			return Buffer<TSource> (source, timeSpan, Scheduler.ThreadPool);
 		}
 		
-		struct ListCountContext<TSource>
+		public struct ListCountContext<TSource>
 		{
 			public ListCountContext (int start, List<TSource> list)
 			{
