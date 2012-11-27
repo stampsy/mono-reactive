@@ -1133,7 +1133,7 @@ namespace System.Reactive.Linq
 			// ----
 			}, DefaultColdScheduler);
 		}
-		
+
 		public static IObservable<long> Interval (TimeSpan period)
 		{
 			return Interval (period, Scheduler.ThreadPool);
@@ -1159,6 +1159,33 @@ namespace System.Reactive.Linq
 			// ----
 			}, scheduler);
 		}
+
+        /// <summary>
+        /// AOT-safe version of Interval.
+        /// </summary>
+        public static IObservable<object> SafeInterval (TimeSpan period)
+        {
+            return SafeInterval (period, Scheduler.ThreadPool);
+        }
+        
+        /// <summary>
+        /// AOT-safe version of Interval.
+        /// </summary>
+        public static IObservable<object> SafeInterval (
+            TimeSpan period,
+            IScheduler scheduler)
+        {
+            if (scheduler == null)
+                throw new ArgumentNullException ("scheduler");
+            
+            return new ColdObservableEach<object> (sub => {
+                // ----
+                var dis = new SingleAssignmentDisposable ();
+                dis.Disposable = scheduler.Schedule (period, a => { if (!dis.IsDisposed) { sub.OnNext (null); a (period); } });
+                return dis;
+                // ----
+            }, scheduler);
+        }
 		
 		public static IObservable<TResult> Join<TLeft, TRight, TLeftDuration, TRightDuration, TResult>(
 			this IObservable<TLeft> left,
